@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
+  base: '/code-way/', // 🏆 关键修复：确保所有样式和资源在 /code-way/ 路径下正确加载
   title: "VitePress KB",
   description: "高级个人知识库系统",
 
