@@ -1,0 +1,26 @@
+{
+  "name": "vp-kb",
+  "version": "1.0.0",
+  "description": "High-end VitePress Knowledge Base System",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "sync": "NODE_OPTIONS='--loader ts-node/esm' ts-node scripts/sync.ts && NODE_OPTIONS='--loader ts-node/esm' ts-node scripts/tags.ts",
+    "docs:dev": "pnpm run sync && vitepress dev docs",
+    "docs:build": "pnpm run sync && vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.11.19",
+    "fast-glob": "^3.3.2",
+    "fs-extra": "^11.2.0",
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^4.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "vitepress": "^1.0.1",
+    "vue": "^3.4.19"
+  }
+}
