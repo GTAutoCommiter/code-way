@@ -10,22 +10,22 @@ const DOCS_PATH = path.resolve(__dirname, '../docs');
 const ASSETS_NAME = '_assets';
 
 async function syncNotes() {
-  console.log('🚀 开始从 Obsidian 同步笔记...');
+  console.log('🚀 正在进行纯净同步...');
 
   // 1. 确保目录存在
   await fs.ensureDir(DOCS_PATH);
-  await fs.ensureDir(path.join(DOCS_PATH, '.vitepress'));
 
-  // 2. 清理 docs 中除了 .vitepress 以外的内容
-  const existingFiles = await fg(['**/*', '!**/.*', '!.*/**'], {
+  // 2. 深度清理，但保护系统文件
+  const existingFiles = await fg(['**/*', '!**/.*'], {
     cwd: DOCS_PATH,
     absolute: true
   });
 
   for (const file of existingFiles) {
-    if (!file.includes('.vitepress')) {
-      await fs.remove(file);
+    if (file.includes('.vitepress') || file.endsWith('notes.md') || file.endsWith('index.md')) {
+      continue;
     }
+    await fs.remove(file);
   }
 
   // 3. 拷贝 Markdown 文件
@@ -38,37 +38,35 @@ async function syncNotes() {
 
     let content = await fs.readFile(src, 'utf-8');
 
-    // 自动处理 Obsidian 双链图片 ![[image.png]]
-    content = content.replace(/!\[\[(.*?)\]\]/g, (match, p1) => {
-      return `![${p1}](/${ASSETS_NAME}/${p1})`;
-    });
-
-    // 🏆 最终覆盖方案：对笔记正文中的插值语法进行转义
-    // 这能确保笔记里的大括号不被解析，同时不影响系统索引页（如 notes.md）的 Vue 逻辑
+    // 🏆 核心自动脱敏：将正文中的 {{ }} 转义为 HTML 实体
     content = content.replace(/\{\{/g, '&#x7b;&#x7b;').replace(/\}\}/g, '&#x7d;&#x7d;');
 
-    // 🏆 最终暴力修复：全量转义所有潜在的顶级标签，防止干扰构建
+    // 🏆 核心修复：转义潜在的顶级标签，防止干扰 VitePress 构建
+    // 很多笔记包含 HTML 示例，必须转义才能通过 SFC 编译
     content = content
       .replace(/<script/gi, '&lt;script')
       .replace(/<\/script>/gi, '&lt;/script&gt;')
       .replace(/<style/gi, '&lt;style')
       .replace(/<\/style>/gi, '&lt;/style&gt;');
 
-    // 🏆 核心清洗逻辑：全量清洗 Typora 冲突路径 (以 \ 或 C:\ 等开头的路径)
-    // 并且：检查图片是否存在，不存在则不生成路径，防止阻断构建
+    // 🏆 精简逻辑：只处理图片路径
+    // 自动处理 Obsidian 双链图片 ![[image.png]]
+    content = content.replace(/!\[\[(.*?)\]\]/g, (match, p1) => {
+      return `![${p1}](/${ASSETS_NAME}/${p1})`;
+    });
+
+    // 清洗 Typora 绝对路径，增加物理存在检查防止阻断构建
     const assetPath = path.join(OBSIDIAN_PATH, ASSETS_NAME);
     content = content.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, p2) => {
       let fileName = '';
-      if (p2.includes('\\') || p2.startsWith('/Data') || p2.startsWith('C:') || p2.startsWith('D:')) {
+      if (p2.includes('\\') || p2.startsWith('C:') || p2.startsWith('D:')) {
         fileName = p2.replace(/\\/g, '/').split('/').pop() || '';
       } else if (p2.startsWith(`/${ASSETS_NAME}/`)) {
         fileName = p2.replace(`/${ASSETS_NAME}/`, '');
       }
 
       if (fileName) {
-        // 检查物理文件是否存在
         if (!fs.existsSync(path.join(assetPath, fileName))) {
-          console.log(`⚠️ 图片不存在，已降级处理: ${fileName}`);
           return ` > [!WARNING]\n > 🖼️ 本地图片缺失: ${fileName}\n`;
         }
         return `![${alt}](/${ASSETS_NAME}/${fileName})`;
@@ -79,62 +77,91 @@ async function syncNotes() {
     await fs.writeFile(dest, content);
   }
 
-  // 4. 自动化：为每个分类文件夹生成 index.md (如果不存在)
+  // 4. 读取实际生成的分类文件夹
   const dirs = await fg(['*', '!public', '!.vitepress', '!tags', '!_assets'], {
     cwd: DOCS_PATH,
     onlyDirectories: true
   });
 
+  // 为每个分类文件夹补全 index.md
   for (const dir of dirs) {
     const indexPath = path.join(DOCS_PATH, dir, 'index.md');
     if (!(await fs.pathExists(indexPath))) {
-      // 递归获取该目录下所有 md 文件
       const allFiles = await fg(['**/*.md', '!index.md'], { cwd: path.join(DOCS_PATH, dir) });
-
-      let indexContent = `---
-title: ${dir.toUpperCase()} 知识库
----
-
-# 📂 ${dir.toUpperCase()} 分类目录
-
-在这里，你可以找到关于 ${dir} 的所有笔记。
-
-<div class="dir-list">
-
-${allFiles
-          .sort()
-          .map(f => {
-            const depth = f.split('/').length - 1;
-            const indent = '  '.repeat(depth);
-            const title = f.replace('.md', '').split('/').pop();
-            return `${indent}- [${title}](./${f})`;
-          })
-          .join('\n')}
-
-</div>
-
-<style>
-.dir-list {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background: var(--vp-c-bg-soft);
-  border-radius: 12px;
-  line-height: 1.8;
-}
-</style>
-`;
+      let indexContent = `# 📂 ${dir.toUpperCase()}\n\n`;
+      indexContent += allFiles.sort().map(f => `- [${f.replace('.md', '')}](./${f.replace('.md', '')})`).join('\n');
       await fs.writeFile(indexPath, indexContent);
     }
   }
 
-  // 5. 拷贝资源目录
+  // 5. 🚀 自动化：动态生成核心索引页 notes.md
+  console.log('📖 正在根据目录结构生成知识库索引...');
+  const { CATEGORY_MAP, DEFAULT_CATEGORY } = await import('./category-config.js');
+
+  let notesContent = `---
+layout: page
+title: 知识库索引
+---
+
+# 📚 知识体系分类
+
+<div class="kb-container">
+`;
+
+  for (const dir of dirs) {
+    // @ts-ignore
+    const config = CATEGORY_MAP[dir] || { ...DEFAULT_CATEGORY, title: dir.toUpperCase() };
+    notesContent += `
+  <a href="./${dir}/" class="kb-card">
+    <div class="kb-icon">${config.icon}</div>
+    <div class="kb-content">
+      <div class="kb-title">${config.title}</div>
+      <div class="kb-desc">${config.desc}</div>
+    </div>
+  </a>`;
+  }
+
+  notesContent += `
+</div>
+
+<style scoped>
+.kb-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+.kb-card {
+  display: flex !important;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 12px;
+  background-color: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+}
+.kb-card:hover {
+  border-color: var(--vp-c-brand);
+  background-color: var(--vp-c-bg-mute);
+  transform: translateY(-2px);
+}
+.kb-icon { font-size: 32px; flex-shrink: 0; }
+.kb-title { font-weight: 600; color: var(--vp-c-text-1); font-size: 1.1rem; }
+.kb-desc { color: var(--vp-c-text-2); font-size: 0.85rem; margin-top: 4px; line-height: 1.4; }
+</style>
+`;
+  await fs.writeFile(path.join(DOCS_PATH, 'notes.md'), notesContent);
+
+  // 6. 拷贝资源目录
   const assetSrc = path.join(OBSIDIAN_PATH, ASSETS_NAME);
   const assetDest = path.join(DOCS_PATH, 'public', ASSETS_NAME);
   if (await fs.pathExists(assetSrc)) {
     await fs.copy(assetSrc, assetDest);
   }
 
-  console.log('✅ 同步完成！');
+  console.log('✅ 纯净同步完成！');
 }
 
 syncNotes().catch(err => {

@@ -1,25 +1,11 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  base: '/code-way/', // 🏆 关键修复：确保所有样式和资源在 /code-way/ 路径下正确加载
+  base: '/code-way/', // 只有这个是 GitHub Pages 必须保留的
   title: "VitePress KB",
   description: "高级个人知识库系统",
 
-  // 还原默认定界符以支持系统页面组件
-  vue: {
-    template: {
-      compilerOptions: {
-        isCustomElement: (tag) => tag === 'iconify-icon'
-      }
-    }
-  },
-
-  head: [
-    ['link', { rel: 'icon', href: '/favicon.ico' }],
-    ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1' }]
-  ],
   themeConfig: {
-    logo: 'https://raw.githubusercontent.com/vitejs/vite/main/docs/public/logo.svg',
     nav: [
       { text: '🏠 首页', link: '/' },
       { text: '📚 知识库', link: '/notes' },
@@ -36,50 +22,17 @@ export default defineConfig({
             { text: '⚛️ React', link: '/react/' },
             { text: '🖖 Vue', link: '/vue/' }
           ]
-        },
-        {
-          text: '💡 导航',
-          items: [
-            { text: '所有笔记', link: '/notes' },
-            { text: '所有标签', link: '/tags/' }
-          ]
         }
       ]
-    },
-    search: {
-      provider: 'local',
-      options: {
-        translations: {
-          button: {
-            buttonText: '搜索文档',
-            buttonAriaLabel: '搜索文档'
-          },
-          modal: {
-            noResultsText: '无法找到相关结果',
-            resetButtonTitle: '清除查询条件',
-            footer: {
-              selectText: '选择',
-              navigateText: '切换'
-            }
-          }
-        }
-      }
     },
     socialLinks: [
       { icon: 'github', link: 'https://github.com/your-username/vp-kb' }
     ],
-    footer: {
-      message: 'Powered by Antigravity Senior Architect Design',
-      copyright: 'Copyright © 2024'
+    search: {
+      provider: 'local'
     }
   },
   lastUpdated: true,
   cleanUrls: true,
-  ignoreDeadLinks: true, // 🏆 开启宽容模式：忽略死链，确保构建始终成功
-  markdown: {
-    lineNumbers: true,
-    image: {
-      lazyLoading: true
-    }
-  }
+  ignoreDeadLinks: true // 🏆 必须保留：防止死链阻断构建
 })
