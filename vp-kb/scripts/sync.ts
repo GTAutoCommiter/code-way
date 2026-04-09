@@ -43,14 +43,31 @@ async function syncNotes() {
       return `![${p1}](/${ASSETS_NAME}/${p1})`;
     });
 
-    // 🏆 新增：全量清洗 Typora 冲突路径 (以 \ 或 C:\ 等开头的路径)
-    // 逻辑：将那些指向磁盘绝对路径且无法解析的图片引用转换为纯文本或合法路径，防止阻塞 Vite
+    // 🏆 最终暴力修复：全量转义所有潜在的顶级标签，防止干扰构建
+    // 因为这篇笔记包含了大量的 HTML 和 JS 教学代码，直接暴力转义是最稳健的选择。
+    content = content
+      .replace(/<script/gi, '&lt;script')
+      .replace(/<\/script>/gi, '&lt;/script&gt;')
+      .replace(/<style/gi, '&lt;style')
+      .replace(/<\/style>/gi, '&lt;/style&gt;');
+
+    // 🏆 核心清洗逻辑：全量清洗 Typora 冲突路径 (以 \ 或 C:\ 等开头的路径)
+    // 并且：检查图片是否存在，不存在则不生成路径，防止阻断构建
+    const assetPath = path.join(OBSIDIAN_PATH, ASSETS_NAME);
     content = content.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, p2) => {
-      // 如果路径包含反斜杠或看起来像绝对路径
+      let fileName = '';
       if (p2.includes('\\') || p2.startsWith('/Data') || p2.startsWith('C:') || p2.startsWith('D:')) {
-        // 鲁棒性提取文件名：先替换所有反斜杠，再取最后一段
-        const fileName = p2.replace(/\\/g, '/').split('/').pop();
-        console.log(`⚠️ 修复损毁路径: ${p2} -> ${fileName}`);
+        fileName = p2.replace(/\\/g, '/').split('/').pop() || '';
+      } else if (p2.startsWith(`/${ASSETS_NAME}/`)) {
+        fileName = p2.replace(`/${ASSETS_NAME}/`, '');
+      }
+
+      if (fileName) {
+        // 检查物理文件是否存在
+        if (!fs.existsSync(path.join(assetPath, fileName))) {
+          console.log(`⚠️ 图片不存在，已降级处理: ${fileName}`);
+          return ` > [!WARNING]\n > 🖼️ 本地图片缺失: ${fileName}\n`;
+        }
         return `![${alt}](/${ASSETS_NAME}/${fileName})`;
       }
       return match;

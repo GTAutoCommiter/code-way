@@ -1,0 +1,1 @@
+pnpm -C vp-kb docs:build
