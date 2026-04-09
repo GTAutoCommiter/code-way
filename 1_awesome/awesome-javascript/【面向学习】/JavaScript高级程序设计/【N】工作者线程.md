@@ -1,1 +1,0 @@
-# CacheStorage对象
