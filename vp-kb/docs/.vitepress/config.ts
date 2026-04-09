@@ -5,13 +5,11 @@ export default defineConfig({
   title: "VitePress KB",
   description: "高级个人知识库系统",
 
-  // 🏆 核心修复：禁止 VitePress 将 {{ }} 识别为插值语法
-  // 这会从底层阻止 Vue 编译器去解析笔记中的双大括号，彻底解决构建报错。
+  // 还原默认定界符以支持系统页面组件
   vue: {
     template: {
       compilerOptions: {
-        // 将插值定界符改为极罕见的组合，从而忽略 {{ }}
-        delimiters: ['${', '}']
+        isCustomElement: (tag) => tag === 'iconify-icon'
       }
     }
   },

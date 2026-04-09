@@ -43,8 +43,11 @@ async function syncNotes() {
       return `![${p1}](/${ASSETS_NAME}/${p1})`;
     });
 
+    // 🏆 最终覆盖方案：对笔记正文中的插值语法进行转义
+    // 这能确保笔记里的大括号不被解析，同时不影响系统索引页（如 notes.md）的 Vue 逻辑
+    content = content.replace(/\{\{/g, '&#x7b;&#x7b;').replace(/\}\}/g, '&#x7d;&#x7d;');
+
     // 🏆 最终暴力修复：全量转义所有潜在的顶级标签，防止干扰构建
-    // 因为这篇笔记包含了大量的 HTML 和 JS 教学代码，直接暴力转义是最稳健的选择。
     content = content
       .replace(/<script/gi, '&lt;script')
       .replace(/<\/script>/gi, '&lt;/script&gt;')
