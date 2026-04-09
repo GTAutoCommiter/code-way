@@ -114,9 +114,9 @@ async function syncNotes() {
   let indexContent = `---
 layout: page
 title: 知识库首页
+sidebar: false
 ---
 
-# 📚 我的知识体系
 
 <div class="kb-container">
 `;
@@ -140,34 +140,70 @@ title: 知识库首页
 <style scoped>
 .kb-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-  margin-top: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  margin: 40px auto;
+  max-width: 1200px; /* 🏆 关键：限制最大宽度并居中，防止在大屏上过度拉伸 */
+  padding: 0 20px;
 }
 .kb-card {
   display: flex !important;
   align-items: center;
-  gap: 16px;
-  padding: 20px;
-  border-radius: 12px;
+  gap: 20px;
+  padding: 32px 24px;
+  border-radius: 16px;
   background-color: var(--vp-c-bg-soft);
   border: 1px solid var(--vp-c-divider);
   text-decoration: none !important;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
 }
 .kb-card:hover {
   border-color: var(--vp-c-brand);
   background-color: var(--vp-c-bg-mute);
-  transform: translateY(-2px);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.06);
 }
-.kb-icon { font-size: 32px; flex-shrink: 0; }
-.kb-title { font-weight: 600; color: var(--vp-c-text-1); font-size: 1.1rem; }
-.kb-desc { color: var(--vp-c-text-2); font-size: 0.85rem; margin-top: 4px; line-height: 1.4; }
+.kb-icon { font-size: 44px; flex-shrink: 0; }
+.kb-title { font-weight: 700; color: var(--vp-c-text-1); font-size: 1.25rem; }
+.kb-desc { color: var(--vp-c-text-2); font-size: 0.95rem; margin-top: 6px; line-height: 1.6; }
 </style>
 `;
   await fs.writeFile(path.join(DOCS_PATH, 'index.md'), indexContent);
 
-  // 6. 拷贝资源
+  // 6. 🚀 自动化：生成动态侧边栏配置 sidebar-gen.ts
+  console.log('🗺️ 正在生成动态侧边栏...');
+  const sidebarConfig: Record<string, any> = {};
+
+  for (const dir of dirs) {
+    const dirPath = path.join(DOCS_PATH, dir);
+    const allFiles = await fg(['**/*.md', '!index.md'], { cwd: dirPath });
+
+    // 按子目录分组构建侧边栏
+    const groups: Record<string, any[]> = {};
+    for (const file of allFiles) {
+      const parts = file.split('/');
+      const groupName = parts.length > 1 ? parts[0] : '其他笔记';
+      if (!groups[groupName]) groups[groupName] = [];
+
+      const fileName = file.replace('.md', '');
+      groups[groupName].push({
+        text: fileName.split('/').pop(),
+        link: `/${dir}/${fileName}`
+      });
+    }
+
+    sidebarConfig[`/${dir}/`] = Object.keys(groups).sort().map(group => ({
+      text: group,
+      collapsed: false,
+      items: groups[group].sort((a, b) => a.text.localeCompare(b.text))
+    }));
+  }
+
+  const sidebarFileContent = `export const generatedSidebar = ${JSON.stringify(sidebarConfig, null, 2)};`;
+  await fs.writeFile(path.join(DOCS_PATH, '.vitepress/sidebar-gen.ts'), sidebarFileContent);
+
+  // 7. 拷贝资源目录
   const assetSrc = path.join(OBSIDIAN_PATH, ASSETS_NAME);
   const assetDest = path.join(DOCS_PATH, 'public', ASSETS_NAME);
   if (await fs.pathExists(assetSrc)) {

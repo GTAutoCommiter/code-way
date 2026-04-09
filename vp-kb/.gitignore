@@ -23,6 +23,7 @@ Thumbs.db
 # 这保证了你的 Git 仓库非常干净，只包含 obsidian-notes 中的原始笔记。
 docs/*
 !docs/.vitepress/
+docs/.vitepress/sidebar-gen.ts
 
 # 不忽略重要的项目配置文件
 !tsconfig.json

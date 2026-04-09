@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import { generatedSidebar } from './sidebar-gen'
 
 export default defineConfig({
   base: '/code-way/', // 只有这个是 GitHub Pages 必须保留的
@@ -10,20 +11,7 @@ export default defineConfig({
       { text: '📚 知识体系', link: '/' },
       { text: '🏷️ 标签', link: '/tags/' }
     ],
-    sidebar: {
-      '/': [
-        {
-          text: '📂 核心分类',
-          items: [
-            { text: '☕ Java', link: '/java/' },
-            { text: 'JS JavaScript', link: '/javascript/' },
-            { text: 'TS TypeScript', link: '/typescript/' },
-            { text: '⚛️ React', link: '/react/' },
-            { text: '🖖 Vue', link: '/vue/' }
-          ]
-        }
-      ]
-    },
+    sidebar: generatedSidebar,
     socialLinks: [
       { icon: 'github', link: 'https://github.com/your-username/vp-kb' }
     ],
