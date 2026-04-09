@@ -7,8 +7,7 @@ export default defineConfig({
 
   themeConfig: {
     nav: [
-      { text: '🏠 首页', link: '/' },
-      { text: '📚 知识库', link: '/notes' },
+      { text: '📚 知识体系', link: '/' },
       { text: '🏷️ 标签', link: '/tags/' }
     ],
     sidebar: {

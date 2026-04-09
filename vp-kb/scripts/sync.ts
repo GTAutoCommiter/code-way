@@ -10,19 +10,19 @@ const DOCS_PATH = path.resolve(__dirname, '../docs');
 const ASSETS_NAME = '_assets';
 
 async function syncNotes() {
-  console.log('🚀 正在进行纯净同步...');
+  console.log('🚀 正在同步并构建超级首页...');
 
   // 1. 确保目录存在
   await fs.ensureDir(DOCS_PATH);
 
-  // 2. 深度清理，但保护系统文件
+  // 2. 深度清理，保护系统文件和已有的 index.md
   const existingFiles = await fg(['**/*', '!**/.*'], {
     cwd: DOCS_PATH,
     absolute: true
   });
 
   for (const file of existingFiles) {
-    if (file.includes('.vitepress') || file.endsWith('notes.md') || file.endsWith('index.md')) {
+    if (file.includes('.vitepress') || file.endsWith('index.md')) {
       continue;
     }
     await fs.remove(file);
@@ -38,24 +38,21 @@ async function syncNotes() {
 
     let content = await fs.readFile(src, 'utf-8');
 
-    // 🏆 核心自动脱敏：将正文中的 {{ }} 转义为 HTML 实体
+    // 🏆 核心自动脱敏
     content = content.replace(/\{\{/g, '&#x7b;&#x7b;').replace(/\}\}/g, '&#x7d;&#x7d;');
 
-    // 🏆 核心修复：转义潜在的顶级标签，防止干扰 VitePress 构建
-    // 很多笔记包含 HTML 示例，必须转义才能通过 SFC 编译
+    // 🏆 核心转义
     content = content
       .replace(/<script/gi, '&lt;script')
       .replace(/<\/script>/gi, '&lt;/script&gt;')
       .replace(/<style/gi, '&lt;style')
       .replace(/<\/style>/gi, '&lt;/style&gt;');
 
-    // 🏆 精简逻辑：只处理图片路径
-    // 自动处理 Obsidian 双链图片 ![[image.png]]
+    // 自动处理图片
     content = content.replace(/!\[\[(.*?)\]\]/g, (match, p1) => {
       return `![${p1}](/${ASSETS_NAME}/${p1})`;
     });
 
-    // 清洗 Typora 绝对路径，增加物理存在检查防止阻断构建
     const assetPath = path.join(OBSIDIAN_PATH, ASSETS_NAME);
     content = content.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, p2) => {
       let fileName = '';
@@ -65,11 +62,8 @@ async function syncNotes() {
         fileName = p2.replace(`/${ASSETS_NAME}/`, '');
       }
 
-      if (fileName) {
-        if (!fs.existsSync(path.join(assetPath, fileName))) {
-          return ` > [!WARNING]\n > 🖼️ 本地图片缺失: ${fileName}\n`;
-        }
-        return `![${alt}](/${ASSETS_NAME}/${fileName})`;
+      if (fileName && !fs.existsSync(path.join(assetPath, fileName))) {
+        return ` > [!WARNING]\n > 🖼️ 本地图片缺失: ${fileName}\n`;
       }
       return match;
     });
@@ -77,33 +71,52 @@ async function syncNotes() {
     await fs.writeFile(dest, content);
   }
 
-  // 4. 读取实际生成的分类文件夹
+  // 4. 读取分类并补全 index.md
   const dirs = await fg(['*', '!public', '!.vitepress', '!tags', '!_assets'], {
     cwd: DOCS_PATH,
     onlyDirectories: true
   });
 
-  // 为每个分类文件夹补全 index.md
+  // 为每个分类文件夹补全 index.md (层级索引版)
   for (const dir of dirs) {
     const indexPath = path.join(DOCS_PATH, dir, 'index.md');
     if (!(await fs.pathExists(indexPath))) {
       const allFiles = await fg(['**/*.md', '!index.md'], { cwd: path.join(DOCS_PATH, dir) });
-      let indexContent = `# 📂 ${dir.toUpperCase()}\n\n`;
-      indexContent += allFiles.sort().map(f => `- [${f.replace('.md', '')}](./${f.replace('.md', '')})`).join('\n');
+
+      // 按子目录分组
+      const groups: Record<string, string[]> = {};
+      for (const file of allFiles) {
+        const parts = file.split('/');
+        const groupName = parts.length > 1 ? parts[0] : '未分类';
+        if (!groups[groupName]) groups[groupName] = [];
+        groups[groupName].push(file);
+      }
+
+      let indexContent = `# 📂 ${dir.toUpperCase()} 知识体系\n\n`;
+
+      // 排序并生成内容
+      Object.keys(groups).sort().forEach(group => {
+        indexContent += `## 📑 ${group}\n\n`;
+        groups[group].sort().forEach(f => {
+          const fileName = f.replace('.md', '').split('/').pop();
+          indexContent += `- [${fileName}](./${f.replace('.md', '')})\n`;
+        });
+        indexContent += '\n';
+      });
+
       await fs.writeFile(indexPath, indexContent);
     }
   }
 
-  // 5. 🚀 自动化：动态生成核心索引页 notes.md
-  console.log('📖 正在根据目录结构生成知识库索引...');
+  // 5. 🚀 动态生成超级首页 index.md
   const { CATEGORY_MAP, DEFAULT_CATEGORY } = await import('./category-config.js');
 
-  let notesContent = `---
+  let indexContent = `---
 layout: page
-title: 知识库索引
+title: 知识库首页
 ---
 
-# 📚 知识体系分类
+# 📚 我的知识体系
 
 <div class="kb-container">
 `;
@@ -111,7 +124,7 @@ title: 知识库索引
   for (const dir of dirs) {
     // @ts-ignore
     const config = CATEGORY_MAP[dir] || { ...DEFAULT_CATEGORY, title: dir.toUpperCase() };
-    notesContent += `
+    indexContent += `
   <a href="./${dir}/" class="kb-card">
     <div class="kb-icon">${config.icon}</div>
     <div class="kb-content">
@@ -121,7 +134,7 @@ title: 知识库索引
   </a>`;
   }
 
-  notesContent += `
+  indexContent += `
 </div>
 
 <style scoped>
@@ -152,16 +165,16 @@ title: 知识库索引
 .kb-desc { color: var(--vp-c-text-2); font-size: 0.85rem; margin-top: 4px; line-height: 1.4; }
 </style>
 `;
-  await fs.writeFile(path.join(DOCS_PATH, 'notes.md'), notesContent);
+  await fs.writeFile(path.join(DOCS_PATH, 'index.md'), indexContent);
 
-  // 6. 拷贝资源目录
+  // 6. 拷贝资源
   const assetSrc = path.join(OBSIDIAN_PATH, ASSETS_NAME);
   const assetDest = path.join(DOCS_PATH, 'public', ASSETS_NAME);
   if (await fs.pathExists(assetSrc)) {
     await fs.copy(assetSrc, assetDest);
   }
 
-  console.log('✅ 纯净同步完成！');
+  console.log('✅ 超级首页构建完成！');
 }
 
 syncNotes().catch(err => {
