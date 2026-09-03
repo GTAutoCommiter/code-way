@@ -32,8 +32,10 @@ async function syncNotes() {
   const notes = await fg(['**/*.md', '!**/.*/**'], { cwd: OBSIDIAN_PATH });
 
   for (const note of notes) {
+    // 🏆 清理文件名中的 URL 特殊字符（如 ? # %），防止 Vite 模块解析失败
+    const safeNote = note.split('/').map(part => part.replace(/[\?#%]/g, '')).join('/');
     const src = path.join(OBSIDIAN_PATH, note);
-    const dest = path.join(DOCS_PATH, note);
+    const dest = path.join(DOCS_PATH, safeNote);
     await fs.ensureDir(path.dirname(dest));
 
     let content = await fs.readFile(src, 'utf-8');

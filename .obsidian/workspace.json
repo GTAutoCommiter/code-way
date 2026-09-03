@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "vp-kb/obsidian-notes/algorithm/《大话数据结构》.md",
+                "file": "vp-kb/obsidian-notes/network/计算机网络.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "《大话数据结构》"
+              "title": "计算机网络"
             }
           }
         ]
@@ -142,7 +142,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "vp-kb/obsidian-notes/algorithm/《大话数据结构》.md",
+                "file": "vp-kb/obsidian-notes/network/计算机网络.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -171,9 +171,6 @@
   },
   "active": "1e691612b27549ea",
   "lastOpenFiles": [
-    "vp-kb/obsidian-notes/0_草稿箱/【翻译】Python for JavaScript Developers.md",
-    "vp-kb/obsidian-notes/python/【翻译】Python for JavaScript Developers.md",
-    "vp-kb/obsidian-notes/python",
     "vp-kb/docs/tags/react-源码阅读-初始化渲染-render阶段.md",
     "vp-kb/docs/tags/react-源码阅读-数据结构.md",
     "vp-kb/docs/tags/react-源码阅读-v17.md",
@@ -189,8 +186,8 @@
     "vp-kb/docs/tags/react-【面向学习】.md",
     "vp-kb/docs/tags/os-操作系统.md",
     "vp-kb/docs/tags/os-windows.md",
-    "vp-kb/docs/tags/os-macOs.md",
     "vp-kb/docs/tags/os-linux.md",
+    "vp-kb/docs/tags/os-macOs.md",
     "vp-kb/docs/tags/npm-知识库.md",
     "vp-kb/docs/tags/javascript-知识库.md",
     "vp-kb/docs/tags/javascript-【面向开发】.md",
@@ -198,6 +195,10 @@
     "vp-kb/docs/tags/javascript-freeCodeCamp.md",
     "vp-kb/docs/tags/javascript-WebAPI.md",
     "vp-kb/docs/tags/javascript-JavaScript高级程序设计.md",
+    "vp-kb/docs/tags/javascript-JavaScript工程师都应懂的33个概念.md",
+    "vp-kb/docs/tags/javascript-JSchallenger.md",
+    "vp-kb/docs/python",
+    "vp-kb/obsidian-notes/python",
     "vp-kb/docs/0_草稿箱",
     "vp-kb/obsidian-notes/0_草稿箱",
     "1_awesome/awesome-javascript/【面向学习】_副本/JavaScript高级程序设计",
@@ -205,7 +206,6 @@
     "1_awesome/awesome-javascript/【JSchallenger】_副本",
     "1_awesome/awesome-javascript/【面向学习】_副本",
     "1_awesome/awesome-javascript/【面向面试】_副本",
-    "1_awesome/awesome-javascript/【面向开发】_副本",
-    "1_awesome/awesome-java/面向对象/未命名"
+    "1_awesome/awesome-javascript/【面向开发】_副本"
   ]
 }
