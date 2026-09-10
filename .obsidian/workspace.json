@@ -13,15 +13,30 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "vp-kb/obsidian-notes/network/计算机网络.md",
+                "file": "vp-kb/obsidian-notes/network/【翻译】How does the Internet Work.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "计算机网络"
+              "title": "【翻译】How does the Internet Work"
+            }
+          },
+          {
+            "id": "abc29130daa201a5",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "vp-kb/obsidian-notes/0_草稿箱/【翻译】What is Web Hosting?.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "【翻译】What is Web Hosting?"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -142,7 +157,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "vp-kb/obsidian-notes/network/计算机网络.md",
+                "file": "vp-kb/obsidian-notes/0_草稿箱/【翻译】What is Web Hosting?.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -169,14 +184,18 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "1e691612b27549ea",
+  "active": "abc29130daa201a5",
   "lastOpenFiles": [
+    "vp-kb/obsidian-notes/network/【翻译】How does the Internet Work.md",
+    "vp-kb/obsidian-notes/network/计算机网络.md",
+    "vp-kb/obsidian-notes/algorithm/《大话数据结构》.md",
+    "vp-kb/obsidian-notes/0_草稿箱/【翻译】What is Web Hosting?.md",
     "vp-kb/docs/tags/react-源码阅读-初始化渲染-render阶段.md",
     "vp-kb/docs/tags/react-源码阅读-数据结构.md",
     "vp-kb/docs/tags/react-源码阅读-v17.md",
-    "vp-kb/docs/tags/react-源码阅读-hook.md",
     "vp-kb/docs/tags/htmlandcss-css-知识库.md",
     "vp-kb/docs/tags/docs-jvtools-URL.md",
+    "vp-kb/docs/tags/react-源码阅读-hook.md",
     "vp-kb/docs/tags/docs-jvtools-Time.md",
     "vp-kb/docs/tags/docs-jvtools-Format.md",
     "vp-kb/docs/tags/docs-jvtools-Cookies.md",
@@ -186,17 +205,13 @@
     "vp-kb/docs/tags/react-【面向学习】.md",
     "vp-kb/docs/tags/os-操作系统.md",
     "vp-kb/docs/tags/os-windows.md",
-    "vp-kb/docs/tags/os-linux.md",
-    "vp-kb/docs/tags/os-macOs.md",
     "vp-kb/docs/tags/npm-知识库.md",
     "vp-kb/docs/tags/javascript-知识库.md",
+    "vp-kb/docs/tags/os-macOs.md",
+    "vp-kb/docs/tags/os-linux.md",
     "vp-kb/docs/tags/javascript-【面向开发】.md",
-    "vp-kb/docs/tags/javascript-【面向学习】.md",
     "vp-kb/docs/tags/javascript-freeCodeCamp.md",
-    "vp-kb/docs/tags/javascript-WebAPI.md",
-    "vp-kb/docs/tags/javascript-JavaScript高级程序设计.md",
-    "vp-kb/docs/tags/javascript-JavaScript工程师都应懂的33个概念.md",
-    "vp-kb/docs/tags/javascript-JSchallenger.md",
+    "vp-kb/docs/tags/javascript-【面向学习】.md",
     "vp-kb/docs/python",
     "vp-kb/obsidian-notes/python",
     "vp-kb/docs/0_草稿箱",
